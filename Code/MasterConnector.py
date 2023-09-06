@@ -8,6 +8,7 @@ import math
 import re
 #import sqlalchemy
 import jaydebeapi
+import mysql.connector
 #from sqlalchemy import types
 from sqlalchemy import create_engine
 from IPython.core.ultratb import AutoFormattedTB
@@ -34,7 +35,7 @@ class MasterConnector:
     'truststore': 'False'}
     '''
 
-    def __init__(self, dbDictionary, jarFilesPath, certPath=None, jksPath=None):
+    def __init__(self, dbDictionary, jarFilesPath=None, certPath=None, jksPath=None):
         self.uid = dbDictionary['uid']
         self.pwd = dbDictionary['pwd']
         self.db = dbDictionary['db']
@@ -53,6 +54,14 @@ class MasterConnector:
         '''
         for any other current parameters 
         '''
+        if self.d_source == 'mysql':
+            self.conn = mysql.connector.connect(user=self.uid, 
+                                database=self.db,
+                                password=self.pwd,
+                                host=self.host,
+                                port=self.port)
+            return
+            
         # define string connection
         if self.d_source == 'db2':
             jdbc = 'jdbc:db2:'
