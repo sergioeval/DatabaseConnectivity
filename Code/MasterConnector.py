@@ -34,7 +34,7 @@ class MasterConnector:
     'truststore': 'False'}
     '''
 
-    def __init__(self, dbDictionary):
+    def __init__(self, dbDictionary, jarFilesPath, certPath=None, jksPath=None):
         self.uid = dbDictionary['uid']
         self.pwd = dbDictionary['pwd']
         self.db = dbDictionary['db']
@@ -42,8 +42,12 @@ class MasterConnector:
         self.port = dbDictionary['port']
         self.d_source = dbDictionary['d_source']
         self.ssl = dbDictionary['ssl']
-        self.truststore = dbDictionary['truststore']
-        self.cert = 'CERT.cert'
+        self.using_cert_file = dbDictionary['using_cert_file']
+        self.using_jks_file = dbDictionary['using_jks_file']
+        self.jks_password = dbDictionary['jks_password']
+        self.cert_path = certPath
+        self.jksPath = jksPath
+        self.jarFilesPath = jarFilesPath
 
     def _connectDb(self):
         '''
@@ -64,13 +68,17 @@ class MasterConnector:
             string = jdbc + \
                 f'//{self.host}:{self.port}/{self.db}:useJDBC4ColumnNameAndLabelSemantics=false;'
 
-        if self.truststore == 'True':
-            string = string + f'sslCertLocation={self.cert};'
+        if self.using_cert_file == 'True':
+            string = string + f'sslCertLocation={self.cert_path};'
+        
+        if self.using_jks_file == 'True':
+            string = string + f'sslTrustStoreLocation={self.jksPath};sslTrustStorePassword={self.jks_password};'
+
         # create connection to database
         # jar files
-        jars = glob.glob('*.jar', recursive=False)
+        jars = glob.glob(self.jarFilesPath+'*.jar', recursive=False)
         # jars = glob.glob('jars.zip', recursive=False)
-        jars.append('sqlj4.zip')
+        #jars.append('sqlj4.zip')
         jars = [os.path.abspath(x) for x in jars]
         # print(jars)
         try:
