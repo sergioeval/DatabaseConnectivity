@@ -49,6 +49,8 @@ class MasterConnector:
         self.cert_path = certPath
         self.jksPath = jksPath
         self.jarFilesPath = jarFilesPath
+        self.using_apikey = dbDictionary['using_apikey']
+        self.apikey = dbDictionary['apikey']
 
     def _connectDb(self):
         '''
@@ -82,6 +84,9 @@ class MasterConnector:
         
         if self.using_jks_file == 'True':
             string = string + f'sslTrustStoreLocation={self.jksPath};sslTrustStorePassword={self.jks_password};'
+        
+        if self.using_apikey == 'True':
+            string = string + f'securityMechanism=15;pluginName=IBMIAMauth;accessToken={self.apikey};'
 
         # create connection to database
         # jar files
@@ -90,14 +95,21 @@ class MasterConnector:
         #jars.append('sqlj4.zip')
         jars = [os.path.abspath(x) for x in jars]
         # print(jars)
-        try:
+
+        if self.using_apikey == 'False':
+            try:
+                self.conn = jaydebeapi.connect(
+                    driver, string, [self.uid, self.pwd], jars=jars)
+                self.curs = self.conn.cursor()
+            except Exception as e:
+                print('Error in connection: ', e)
+            else:
+                print(f'Connection to {self.db} established: {self.uid} ')
+        
+        if self.using_apikey == 'True':
             self.conn = jaydebeapi.connect(
-                driver, string, [self.uid, self.pwd], jars=jars)
+                    driver, string, jars=jars)
             self.curs = self.conn.cursor()
-        except Exception as e:
-            print('Error in connection: ', e)
-        else:
-            print(f'Connection to {self.db} established: {self.uid} ')
 
     def getAllGcognosOptions(self):
         'Only use with gcognos daat database connectiong'
