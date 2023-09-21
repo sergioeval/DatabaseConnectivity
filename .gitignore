@@ -162,3 +162,4 @@ JarFiles/*.jar
 DbSecrets/DbCredentials.json
 DbCertificates/ibm-truststore.jks
 DbCertificates/CERT.cert
+.DS_Store
